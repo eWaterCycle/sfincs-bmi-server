@@ -1,4 +1,5 @@
-// TODO add include guards? Not strictly necessary but maybe good practice?
+#ifndef SFINCS_BMI_INCLUDED
+#define SFINCS_BMI_INCLUDED
 
 #include <iostream> // TODO not sure if needed, but bmi-heat.hxx uses it too
 #include <string>
@@ -6,17 +7,17 @@
 
 #include <bmi.hxx> // requires https://github.com/csdms/bmi-cxx
 
-class NotImplemented : public std::logic_error {
+class NotImplemented: public std::logic_error {
 public:
   NotImplemented() : std::logic_error("Not Implemented"){};
 };
 
-class BmiError : public std::logic_error {
+class BmiError: public std::logic_error {
 public:
   BmiError() : std::logic_error("Unexpected result from model"){};
 };
 
-class SfincsBmi : public bmi::Bmi {
+class SfincsBmi: public bmi::Bmi {
 public:
   // Model control functions.
   void Initialize(std::string config_file) override;
@@ -78,3 +79,5 @@ public:
   void GetGridFaceNodes(const int grid, int *face_nodes) override;
   void GetGridNodesPerFace(const int grid, int *nodes_per_face) override;
 };
+
+#endif
