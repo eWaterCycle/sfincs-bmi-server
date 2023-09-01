@@ -34,16 +34,17 @@ RUN git clone https://github.com/eWaterCycle/grpc4bmi /opt/grpc4bmi
 WORKDIR /opt/grpc4bmi/cpp/build
 RUN cmake .. && make install
 
-
 # TODO Get everything above from a shared base container?
 
-# Build sfincs-bmi-server
+# Install sfincs
 # https://hub.docker.com/r/deltares/sfincs-cpu/tags
 # Has /usr/local/lib/libsfincs which already exposes the basic modelling interface
-
+# ...
 # FROM deltares/sfincs-cpu:sfincs-v2.0.2-Blockhaus-Release-Q2-2023
 
+# Build sfincs-bmi-server
+RUN g++ -o sfincs_bmi_server sfincs_bmi_server.cxx sfincs_bmi.cxx `pkg-config --libs protobuf grpc++ grpc` -Wl,--no-as-needed -lgrpc++_reflection -ldl -lgrpc4bmi
 
 # Expose entrypoint
 ENV BMI_PORT=50051
-ENTRYPOINT ["/usr/local/bin/run_bmi_server"]
+ENTRYPOINT ["/usr/local/bin/sfincs_bmi_server"]

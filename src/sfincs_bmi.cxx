@@ -10,26 +10,23 @@
 // Note: get_var not exported but it is actually implemented
 
 #include <cstring>
-#include <sfincs_bmi.hxx>
+#include "sfincs_bmi.hxx"
 
-// sfincs_bmi.f90 implements/exports the following bmi functions:
-extern "C" int initialize();
-extern "C" int update(double dt);
-extern "C" int finalize();
-// extern "C" void get_var_shape(char *c_var_name, int *var_shape);  // Not a
-// BMI function
-extern "C" void get_var_type(char *c_var_name, char *c_type);
-// extern "C" void get_var(char *c_var_name, real *x);  // Not declared as
-// public in fortran code
-extern "C" void get_var_rank(char *c_var_name, int *rank);
-extern "C" void set_var(char *c_var_name, float *xptr);
-extern "C" void get_start_time(double *tstart);
-extern "C" void get_end_time(double *tend);
-extern "C" void get_time_step(double *deltat);
-extern "C" void get_current_time(double *tcurrent);
-
-SfincsBmi::SfincsBmi() {}
-SfincsBmi::~SfincsBmi() {}
+// // sfincs_bmi.f90 implements/exports the following bmi functions:
+// extern "C" int initialize();
+// extern "C" int update(double dt);
+// extern "C" int finalize();
+// // extern "C" void get_var_shape(char *c_var_name, int *var_shape);  // Not a
+// // BMI function
+// extern "C" void get_var_type(char *c_var_name, char *c_type);
+// // extern "C" void get_var(char *c_var_name, real *x);  // Not declared as
+// // public in fortran code
+// extern "C" void get_var_rank(char *c_var_name, int *rank);
+// extern "C" void set_var(char *c_var_name, float *xptr);
+// extern "C" void get_start_time(double *tstart);
+// extern "C" void get_end_time(double *tend);
+// extern "C" void get_time_step(double *deltat);
+// extern "C" void get_current_time(double *tcurrent);
 
 // Model control functions.
 void SfincsBmi::Initialize(std::string config_file) {
@@ -37,11 +34,12 @@ void SfincsBmi::Initialize(std::string config_file) {
   throw NotImplemented();
 }
 void SfincsBmi::Update() {
-  // TODO: get dt from model parameters
-  int status = update(1.);
-  if (status != 0) {
-    throw BmiError();
-  }
+  // // TODO: get dt from model parameters
+  // int status = update(1.);
+  // if (status != 0) {
+  //   throw BmiError();
+  // }
+  throw NotImplemented();
 }
 void SfincsBmi::UpdateUntil(double time) {
   // TODO: implement

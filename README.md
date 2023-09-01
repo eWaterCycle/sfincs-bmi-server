@@ -15,12 +15,33 @@ The c++ wrapper is modelled after [bmi-heat c++ example, version
 For an example see https://github.com/eWaterCycle/hype-bmi/. Note that this uses
 an older version of the BMI spec.
 
-
 ## Development container
 
-To aid development, this package is configured for use with [vscode
+To aid development, this repo is configured for use with [vscode
 devcontainers](https://code.visualstudio.com/docs/devcontainers/containers). In
 vscode, install the devcontainers extension, then from the command pallete
 choose "Dev Containers: Open Folder in Container". This will build the container
 mount your working directory, and open the remote environment in vscode. The c++
 and docker extensions are automatically be loaded.
+
+
+## Debugging/testing
+
+```
+# Write test functions in sfincs_bmi_test.cxx
+cd src
+g++ -o test.out sfincs_bmi_test.cxx sfincs_bmi.cxx
+./test.out
+```
+
+Note: Got issues like described here https://stackoverflow.com/a/33395489
+Solved by adding
+```
+#include <string>
+#include <vector>
+```
+to /opt/bmi-css/bmi.hxx and recompiling with
+```
+cd /opt/bmi-cxx/build
+make .. && make install
+```

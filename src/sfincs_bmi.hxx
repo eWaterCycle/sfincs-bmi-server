@@ -1,10 +1,9 @@
 #ifndef SFINCS_BMI_INCLUDED
 #define SFINCS_BMI_INCLUDED
 
-#include <iostream> // TODO not sure if needed, but bmi-heat.hxx uses it too
 #include <string>
 #include <vector> // TODO: vector not imported in bmi-heat.hxx, is that a bug?
-
+#include <stdexcept>
 #include <bmi.hxx> // requires https://github.com/csdms/bmi-cxx
 
 class NotImplemented: public std::logic_error {
