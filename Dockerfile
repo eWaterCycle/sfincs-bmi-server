@@ -3,6 +3,9 @@
 # Implementation follows https://github.com/eWaterCycle/grpc4bmi/blob/main/test/heat-images/cxx-bmi20/Dockerfile
 # Also see https://github.com/Deltares/SFINCS/blob/main/source/Dockerfile
 
+# Build with:
+# docker build -t sfincs-bmiserver .
+
 FROM debian:buster AS builder
 
 # Install build deps
@@ -43,7 +46,16 @@ RUN cmake .. && make install
 # FROM deltares/sfincs-cpu:sfincs-v2.0.2-Blockhaus-Release-Q2-2023
 
 # Build sfincs-bmi-server
-RUN g++ -o sfincs_bmi_server sfincs_bmi_server.cxx sfincs_bmi.cxx `pkg-config --libs protobuf grpc++ grpc` -Wl,--no-as-needed -lgrpc++_reflection -ldl -lgrpc4bmi
+COPY ./src /opt/sfincs-bmi
+WORKDIR /opt/sfincs-bmi/build
+RUN cmake .. && make install && ldconfig
+
+# TODO can we make the container smaller?
+# FROM debian:buster
+# RUN apt-get update && apt-get install -qy libssl1.1 && rm -rf /var/lib/apt/lists/*
+# COPY --from=builder /usr/local/bin/sfincs_bmi_server /usr/local/bin/sfincs_bmi_server
+# COPY --from=builder /usr/local/lib/ /usr/local/lib/
+# RUN ldconfig
 
 # Expose entrypoint
 ENV BMI_PORT=50051

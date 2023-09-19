@@ -15,6 +15,31 @@ The c++ wrapper is modelled after [bmi-heat c++ example, version
 For an example see https://github.com/eWaterCycle/hype-bmi/. Note that this uses
 an older version of the BMI spec.
 
+## Using it
+
+Build docker image with
+
+```
+cd src
+docker build -t sfincs-bmiserver .
+```
+
+To interact with it through a grpc4bmi client:
+
+```py
+from grpc4bmi.bmi_client_docker import BmiClientDocker
+
+model = BmiClientDocker(image='sfincs-bmiserver', image_port=50051,
+                        work_dir="./")
+
+model.get_component_name()
+# 'Sfincs hydrodynamic model (C)'
+
+```
+
+See https://grpc4bmi.readthedocs.io/en/latest/container/usage.html#docker
+
+
 ## Development container
 
 To aid development, this repo is configured for use with [vscode
@@ -40,8 +65,10 @@ Solved by adding
 #include <string>
 #include <vector>
 ```
-to /opt/bmi-css/bmi.hxx and recompiling with
+to /opt/bmi-cxx/bmi.hxx and recompiling with
 ```
 cd /opt/bmi-cxx/build
 make .. && make install
 ```
+
+Also solved by using cmake, it seems (?).
