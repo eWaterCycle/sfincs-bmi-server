@@ -13,5 +13,9 @@ int main() {
         std::cout << "pass\n";
     }
 
+    // Test initialize
+    std::string config_file = "sfincs.inp";
+    model->Initialize(config_file);
+
     return 0;
 }

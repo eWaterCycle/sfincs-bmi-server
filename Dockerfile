@@ -5,11 +5,16 @@
 
 # Build with:
 # docker build -t sfincs-bmiserver .
+FROM deltares/sfincs-cpu:sfincs-v2.0.2-Blockhaus-Release-Q2-2023 as sfincs_container
 
-FROM debian:buster AS builder
+# Inherit from the same base as sfincs to get compatible library versions
+FROM ubuntu:jammy AS sfincs_bmi_container
 
-# Install build deps
-RUN apt-get update && apt-get install -qy git build-essential cmake autoconf libtool pkg-config libssl-dev
+# Install sfincs
+COPY --from=sfincs_container /usr/local /usr/local
+
+# Install build deps (including sfincs` dependency on netcdf)
+RUN apt-get update && apt-get install -qy git build-essential cmake autoconf libtool pkg-config libssl-dev libnetcdf-dev gfortran
 
 # Compile gRPC
 WORKDIR /opt/grpc
@@ -37,15 +42,7 @@ RUN git clone https://github.com/eWaterCycle/grpc4bmi /opt/grpc4bmi
 WORKDIR /opt/grpc4bmi/cpp/build
 RUN cmake .. && make install
 
-# TODO Get everything above from a shared base container?
-
-# Install sfincs
-# https://hub.docker.com/r/deltares/sfincs-cpu/tags
-# Has /usr/local/lib/libsfincs which already exposes the basic modelling interface
-# ...
-# FROM deltares/sfincs-cpu:sfincs-v2.0.2-Blockhaus-Release-Q2-2023
-
-# Build sfincs-bmi-server
+# Build sfincs-bmi-server (requires libsfincs)
 COPY ./src /opt/sfincs-bmi
 WORKDIR /opt/sfincs-bmi/build
 RUN cmake .. && make install && ldconfig
@@ -53,8 +50,8 @@ RUN cmake .. && make install && ldconfig
 # TODO can we make the container smaller?
 # FROM debian:buster
 # RUN apt-get update && apt-get install -qy libssl1.1 && rm -rf /var/lib/apt/lists/*
-# COPY --from=builder /usr/local/bin/sfincs_bmi_server /usr/local/bin/sfincs_bmi_server
-# COPY --from=builder /usr/local/lib/ /usr/local/lib/
+# COPY --from=sfincs_bmi_container /usr/local/bin/sfincs_bmi_server /usr/local/bin/sfincs_bmi_server
+# COPY --from=sfincs_bmi_container /usr/local/lib/ /usr/local/lib/
 # RUN ldconfig
 
 # Expose entrypoint

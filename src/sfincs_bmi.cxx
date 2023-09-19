@@ -13,7 +13,7 @@
 #include "sfincs_bmi.hxx"
 
 // // sfincs_bmi.f90 implements/exports the following bmi functions:
-// extern "C" int initialize();
+extern "C" int initialize(char *c_config_file);
 // extern "C" int update(double dt);
 // extern "C" int finalize();
 // // extern "C" void get_var_shape(char *c_var_name, int *var_shape);  // Not a
@@ -30,8 +30,12 @@
 
 // Model control functions.
 void SfincsBmi::Initialize(std::string config_file) {
-  // TODO: implement
-  throw NotImplemented();
+  // Convert c-string to character array
+  const int length = config_file.length();
+  char* c_config_file = new char[length + 1];
+  strcpy(c_config_file, config_file.c_str());
+  initialize(c_config_file);
+  delete[] c_config_file;
 }
 void SfincsBmi::Update() {
   // // TODO: get dt from model parameters
