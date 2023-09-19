@@ -14,8 +14,8 @@
 
 // // sfincs_bmi.f90 implements/exports the following bmi functions:
 extern "C" int initialize(char *c_config_file);
-// extern "C" int update(double dt);
-// extern "C" int finalize();
+extern "C" int update(double dt);
+extern "C" int finalize();
 // // extern "C" void get_var_shape(char *c_var_name, int *var_shape);  // Not a
 // // BMI function
 // extern "C" void get_var_type(char *c_var_name, char *c_type);
@@ -25,8 +25,8 @@ extern "C" int initialize(char *c_config_file);
 // extern "C" void set_var(char *c_var_name, float *xptr);
 // extern "C" void get_start_time(double *tstart);
 // extern "C" void get_end_time(double *tend);
-// extern "C" void get_time_step(double *deltat);
-// extern "C" void get_current_time(double *tcurrent);
+extern "C" void get_time_step(double *dt);
+extern "C" void get_current_time(double *tcurrent);
 
 // Model control functions.
 void SfincsBmi::Initialize(std::string config_file) {
@@ -38,20 +38,24 @@ void SfincsBmi::Initialize(std::string config_file) {
   delete[] c_config_file;
 }
 void SfincsBmi::Update() {
-  // // TODO: get dt from model parameters
-  // int status = update(1.);
-  // if (status != 0) {
-  //   throw BmiError();
-  // }
-  throw NotImplemented();
+  double dt = this->GetTimeStep();
+  int status = update(dt);
+  if (status != 0) {
+    throw BmiError();
+  }
 }
 void SfincsBmi::UpdateUntil(double time) {
-  // TODO: implement
-  throw NotImplemented();
+  double t = this->GetCurrentTime();
+  while (t < time) {
+    this->Update();
+    t = this->GetCurrentTime();
+  };
 }
 void SfincsBmi::Finalize() {
-  // TODO: implement
-  throw NotImplemented();
+  int status = finalize();
+  if (status != 0) {
+    throw BmiError();
+  }
 }
 
 // Model information functions.
@@ -102,8 +106,9 @@ std::string SfincsBmi::GetVarLocation(std::string name) {
 }
 
 double SfincsBmi::GetCurrentTime() {
-  // TODO: implement
-  throw NotImplemented();
+  double t;
+  get_current_time(&t);
+  return t;
 }
 double SfincsBmi::GetStartTime() {
   // TODO: implement
@@ -118,8 +123,9 @@ std::string SfincsBmi::GetTimeUnits() {
   throw NotImplemented();
 }
 double SfincsBmi::GetTimeStep() {
-  // TODO: implement
-  throw NotImplemented();
+  double dt;
+  get_time_step(&dt);
+  return dt;
 }
 
 // Variable getters
