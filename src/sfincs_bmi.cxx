@@ -12,21 +12,21 @@
 #include <cstring>
 #include "sfincs_bmi.hxx"
 
-// // sfincs_bmi.f90 implements/exports the following bmi functions:
+// sfincs_bmi.f90 implements/exports the following bmi functions:
 extern "C" int initialize(char *c_config_file);
-extern "C" int update(double dt);
+extern "C" int update(double dt);  // Doesn't seem to update current time
 extern "C" int finalize();
-// // extern "C" void get_var_shape(char *c_var_name, int *var_shape);  // Not a
-// // BMI function
-// extern "C" void get_var_type(char *c_var_name, char *c_type);
-// // extern "C" void get_var(char *c_var_name, real *x);  // Not declared as
-// // public in fortran code
-// extern "C" void get_var_rank(char *c_var_name, int *rank);
-// extern "C" void set_var(char *c_var_name, float *xptr);
-// extern "C" void get_start_time(double *tstart);
-// extern "C" void get_end_time(double *tend);
+extern "C" void get_start_time(double *tstart);
+extern "C" void get_end_time(double *tend);
 extern "C" void get_time_step(double *dt);
 extern "C" void get_current_time(double *tcurrent);
+// extern "C" void get_var_type(char *c_var_name, char *c_type);
+
+// These function are also exported but not in the BMI spec
+// extern "C" void get_var(char *c_var_name, real *x);  // not exported; should be get_value?
+// extern "C" void set_var(char *c_var_name, float *xptr);  // should be set get_value?
+// extern "C" void get_var_shape(char *c_var_name, int *var_shape);
+// extern "C" void get_var_rank(char *c_var_name, int *rank);
 
 // Model control functions.
 void SfincsBmi::Initialize(std::string config_file) {
@@ -39,6 +39,7 @@ void SfincsBmi::Initialize(std::string config_file) {
 }
 void SfincsBmi::Update() {
   double dt = this->GetTimeStep();
+  // dt = 1.;  // The initial time step is super small (1e-6)
   int status = update(dt);
   if (status != 0) {
     throw BmiError();
@@ -111,12 +112,14 @@ double SfincsBmi::GetCurrentTime() {
   return t;
 }
 double SfincsBmi::GetStartTime() {
-  // TODO: implement
-  throw NotImplemented();
+  double starttime;
+  get_start_time(&starttime);
+  return starttime;
 }
 double SfincsBmi::GetEndTime() {
-  // TODO: implement
-  throw NotImplemented();
+  double endtime;
+  get_end_time(&endtime);
+  return endtime;
 }
 std::string SfincsBmi::GetTimeUnits() {
   // TODO: implement
