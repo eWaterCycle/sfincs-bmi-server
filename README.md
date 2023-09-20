@@ -29,12 +29,9 @@ To interact with it through a grpc4bmi client:
 ```py
 from grpc4bmi.bmi_client_docker import BmiClientDocker
 
-model = BmiClientDocker(image='sfincs-bmiserver', image_port=50051,
-                        work_dir="./")
-
+model = BmiClientDocker(image='sfincs-bmiserver', image_port=50051, work_dir="./")
 model.get_component_name()
 # 'Sfincs hydrodynamic model (C)'
-
 ```
 
 See https://grpc4bmi.readthedocs.io/en/latest/container/usage.html#docker
@@ -71,4 +68,4 @@ cd /opt/bmi-cxx/build
 make .. && make install
 ```
 
-Also solved by using cmake, it seems (?).
+Update: Also solved after switching from raw g++ call to cmake.
