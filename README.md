@@ -34,8 +34,9 @@ model.get_component_name()
 # 'Sfincs hydrodynamic model (C)'
 ```
 
-See https://grpc4bmi.readthedocs.io/en/latest/container/usage.html#docker
+See the example notebook shipped with this repo.
 
+See https://grpc4bmi.readthedocs.io/en/latest/container/usage.html#docker
 
 ## Development container
 
@@ -45,27 +46,3 @@ vscode, install the devcontainers extension, then from the command pallete
 choose "Dev Containers: Open Folder in Container". This will build the container
 mount your working directory, and open the remote environment in vscode. The c++
 and docker extensions are automatically be loaded.
-
-
-## Debugging/testing
-
-```
-# Write test functions in sfincs_bmi_test.cxx
-cd src
-g++ -o test.out sfincs_bmi_test.cxx sfincs_bmi.cxx
-./test.out
-```
-
-Note: Got issues like described here https://stackoverflow.com/a/33395489
-Solved by adding
-```
-#include <string>
-#include <vector>
-```
-to /opt/bmi-cxx/bmi.hxx and recompiling with
-```
-cd /opt/bmi-cxx/build
-make .. && make install
-```
-
-Update: Also solved after switching from raw g++ call to cmake.
