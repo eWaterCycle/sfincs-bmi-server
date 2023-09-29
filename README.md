@@ -17,6 +17,8 @@ an older version of the BMI spec.
 
 ## Using it
 
+Pull image from https://github.com/eWaterCycle/sfincs-bmi-server/pkgs/container/sfincs-bmiserver or
+
 Build docker image with
 
 ```shell
