@@ -57,3 +57,5 @@ RUN cmake .. && make install && ldconfig
 # Expose entrypoint
 ENV BMI_PORT=50051
 ENTRYPOINT ["/usr/local/bin/sfincs_bmi_server"]
+
+LABEL org.opencontainers.image.source https://github.com/eWaterCycle/sfincs-bmi-server

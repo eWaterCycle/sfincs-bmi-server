@@ -47,3 +47,35 @@ vscode, install the devcontainers extension, then from the command pallete
 choose "Dev Containers: Open Folder in Container". This will build the container
 mount your working directory, and open the remote environment in vscode. The c++
 and docker extensions are automatically be loaded.
+
+To rebuild the server without rebuilding Docker image use
+
+```sh
+cd src
+mkdir build
+cmake ..
+make
+# Produces a `./sfincs_bmi_server` executable.
+./sfincs_bmi_server
+```
+
+To interact with it through a grpc4bmi client:
+
+```py
+import grpc
+from grpc4bmi.bmi_grpc_client import BmiClient
+
+model = BmiClient(grpc.insecure_channel("localhost:50051"))
+
+model.get_component_name()
+# 'Sfincs hydrodynamic model (C)'
+```
+
+## Publish image
+
+After build, publish image to https://github.com/orgs/eWaterCycle/packages with
+
+```shell
+docker tag sfincs-bmiserver ghcr.io/ewatercycle/sfincs-bmiserver:sfincs-v2.0.2-Blockhaus-Release-Q2-2023
+docker push ghcr.io/ewatercycle/sfincs-bmiserver:sfincs-v2.0.2-Blockhaus-Release-Q2-2023
+```
