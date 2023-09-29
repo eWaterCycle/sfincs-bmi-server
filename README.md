@@ -19,8 +19,7 @@ an older version of the BMI spec.
 
 Build docker image with
 
-```
-cd src
+```shell
 docker build -t sfincs-bmiserver .
 ```
 
@@ -32,6 +31,8 @@ from grpc4bmi.bmi_client_docker import BmiClientDocker
 model = BmiClientDocker(image='sfincs-bmiserver', image_port=50051, work_dir="./")
 model.get_component_name()
 # 'Sfincs hydrodynamic model (C)'
+
+del model
 ```
 
 See the example notebook shipped with this repo.
