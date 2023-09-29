@@ -57,11 +57,11 @@ cd src
 mkdir build
 cmake ..
 make
-# Produces a `./sfincs_bmi_server` executable.
+# Start gprc server
 ./sfincs_bmi_server
 ```
 
-To interact with it through a grpc4bmi client:
+To interact with grpc server through a grpc4bmi client:
 
 ```py
 import grpc
