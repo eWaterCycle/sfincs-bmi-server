@@ -17,10 +17,11 @@ an older version of the BMI spec.
 
 ## Using it
 
+Pull image from https://github.com/eWaterCycle/sfincs-bmi-server/pkgs/container/sfincs-bmiserver or
+
 Build docker image with
 
-```
-cd src
+```shell
 docker build -t sfincs-bmiserver .
 ```
 
@@ -32,6 +33,8 @@ from grpc4bmi.bmi_client_docker import BmiClientDocker
 model = BmiClientDocker(image='sfincs-bmiserver', image_port=50051, work_dir="./")
 model.get_component_name()
 # 'Sfincs hydrodynamic model (C)'
+
+del model
 ```
 
 See the example notebook shipped with this repo.
@@ -46,3 +49,35 @@ vscode, install the devcontainers extension, then from the command pallete
 choose "Dev Containers: Open Folder in Container". This will build the container
 mount your working directory, and open the remote environment in vscode. The c++
 and docker extensions are automatically be loaded.
+
+To rebuild the server without rebuilding Docker image use
+
+```sh
+cd src
+mkdir build
+cmake ..
+make
+# Start gprc server
+./sfincs_bmi_server
+```
+
+To interact with grpc server through a grpc4bmi client:
+
+```py
+import grpc
+from grpc4bmi.bmi_grpc_client import BmiClient
+
+model = BmiClient(grpc.insecure_channel("localhost:50051"))
+
+model.get_component_name()
+# 'Sfincs hydrodynamic model (C)'
+```
+
+## Publish image
+
+After build, publish image to https://github.com/orgs/eWaterCycle/packages with
+
+```shell
+docker tag sfincs-bmiserver ghcr.io/ewatercycle/sfincs-bmiserver:sfincs-v2.0.2-Blockhaus-Release-Q2-2023
+docker push ghcr.io/ewatercycle/sfincs-bmiserver:sfincs-v2.0.2-Blockhaus-Release-Q2-2023
+```
