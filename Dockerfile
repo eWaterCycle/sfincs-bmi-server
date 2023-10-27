@@ -5,7 +5,25 @@
 
 # Build with:
 # docker build -t sfincs-bmiserver .
-FROM deltares/sfincs-cpu:sfincs-v2.0.2-Blockhaus-Release-Q2-2023 as sfincs_container
+
+
+#FROM deltares/sfincs-cpu:sfincs-v2.0.2-Blockhaus-Release-Q2-2023 as sfincs_container
+
+FROM ubuntu:jammy AS sfincs_container
+
+# Compile sfincs from a Github branch instead of from image
+# with copy of Dockerfile at https://github.com/Deltares/SFINCS/blob/feature/48-extend-bmi-functionality/source/Dockerfile
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt clean && apt autoclean && apt update --fix-missing && apt upgrade -y && apt install -y libnetcdf-dev build-essential autoconf automake libtool gfortran gdb tzdata m4 git
+WORKDIR /usr/src/sfincs
+ARG SFINCS_VERSION=feature/48-extend-bmi-functionality
+RUN git clone -b ${SFINCS_VERSION} --depth 1 https://github.com/Deltares/SFINCS .
+WORKDIR /usr/src/sfincs/source
+RUN chmod -R 777 autogen.sh
+# -fallow-argument-mismatch needed for https://github.com/Unidata/netcdf-fortran/issues/212
+ENV FCFLAGS="-fopenmp -O3 -fallow-argument-mismatch -w"
+ENV FFLAGS="-fopenmp -O3 -fallow-argument-mismatch -w"
+RUN autoreconf -ivf && ./autogen.sh && ./configure --disable-openacc && make && make install
 
 # Inherit from the same base as sfincs to get compatible library versions
 FROM ubuntu:jammy AS sfincs_bmi_container
