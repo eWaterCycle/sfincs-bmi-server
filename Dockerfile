@@ -18,7 +18,7 @@ RUN apt clean && apt autoclean && apt update --fix-missing && apt upgrade -y && 
 WORKDIR /usr/src/sfincs
 # ARG SFINCS_VERSION=feature/48-extend-bmi-functionality
 ARG SFINCS_VERSION=main
-RUN git clone -b ${SFINCS_VERSION} --depth 1 https://github.com/Deltares/SFINCS .
+RUN git clone -b ${SFINCS_VERSION} https://github.com/Deltares/SFINCS . && git checkout a5136da72ad48e562dbaeba5ade2a9007f6c75c0
 WORKDIR /usr/src/sfincs/source
 RUN chmod -R 777 autogen.sh
 # -fallow-argument-mismatch needed for https://github.com/Unidata/netcdf-fortran/issues/212
