@@ -16,7 +16,8 @@ FROM ubuntu:jammy AS sfincs_container
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt clean && apt autoclean && apt update --fix-missing && apt upgrade -y && apt install -y libnetcdf-dev build-essential autoconf automake libtool gfortran gdb tzdata m4 git
 WORKDIR /usr/src/sfincs
-ARG SFINCS_VERSION=feature/48-extend-bmi-functionality
+# ARG SFINCS_VERSION=feature/48-extend-bmi-functionality
+ARG SFINCS_VERSION=main
 RUN git clone -b ${SFINCS_VERSION} --depth 1 https://github.com/Deltares/SFINCS .
 WORKDIR /usr/src/sfincs/source
 RUN chmod -R 777 autogen.sh
