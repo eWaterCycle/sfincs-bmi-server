@@ -17,13 +17,17 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt clean && apt autoclean && apt update --fix-missing && apt upgrade -y && apt install -y libnetcdf-dev build-essential autoconf automake libtool gfortran gdb tzdata m4 git
 WORKDIR /usr/src/sfincs
 ARG SFINCS_VERSION=feature/48-extend-bmi-functionality
-RUN git clone -b ${SFINCS_VERSION} --depth 1 https://github.com/Deltares/SFINCS .
+RUN git clone -b ${SFINCS_VERSION} https://github.com/Deltares/SFINCS . \
+  && git config --global user.email "you@example.com" && git config --global user.name "Your Name" \
+  && git cherry-pick 2651b47b797c9acd05ccd8e6d737db19b0670217
 WORKDIR /usr/src/sfincs/source
 RUN chmod -R 777 autogen.sh
 # -fallow-argument-mismatch needed for https://github.com/Unidata/netcdf-fortran/issues/212
 ENV FCFLAGS="-fopenmp -O3 -fallow-argument-mismatch -w"
 ENV FFLAGS="-fopenmp -O3 -fallow-argument-mismatch -w"
 RUN autoreconf -ivf && ./autogen.sh && ./configure --disable-openacc && make && make install
+
+# End of copy of Dockerfile at https://github.com/Deltares/SFINCS/blob/feature/48-extend-bmi-functionality/source/Dockerfile
 
 # Inherit from the same base as sfincs to get compatible library versions
 FROM ubuntu:jammy AS sfincs_bmi_container
