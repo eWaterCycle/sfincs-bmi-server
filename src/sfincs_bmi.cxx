@@ -73,12 +73,10 @@ std::string SfincsBmi::GetComponentName() {
   return "Sfincs hydrodynamic model (C)";
 }
 int SfincsBmi::GetInputItemCount() {
-  // TODO: implement
-  throw NotImplemented();
+  return this->GetInputVarNames().size();
 }
 int SfincsBmi::GetOutputItemCount() {
-  // TODO: implement
-  throw NotImplemented();
+  return this->GetOutputVarNames().size();
 }
 std::vector<std::string> SfincsBmi::GetInputVarNames() {
   // TODO: get from fortran 
