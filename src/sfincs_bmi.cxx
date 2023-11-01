@@ -48,7 +48,9 @@ void SfincsBmi::Initialize(std::string config_file) {
 }
 void SfincsBmi::Update() {
   double dt = this->GetTimeStep();
-  // dt = 1.;  // The initial time step is super small (1e-6)
+  dt = 60.;  // The initial time step is super small (1e-6)
+  // TODO make configurable? Sfincs uses adaptive time step internally.
+  // Let's use a default "BMI user time step" of 60 seconds for now.
   int status = update(dt);
   if (status != 0) {
     throw BmiError();
