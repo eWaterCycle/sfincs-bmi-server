@@ -18,9 +18,10 @@ RUN apt clean && apt autoclean && apt update --fix-missing && apt upgrade -y && 
 WORKDIR /usr/src/sfincs
 ARG SFINCS_VERSION=feature/48-extend-bmi-functionality
 RUN git clone -b ${SFINCS_VERSION} https://github.com/Deltares/SFINCS . \
-  && git config --global user.email "you@example.com" && git config --global user.name "Your Name" \
+  && git config --global user.email "you@example.com" && git config --global user.name "Your Name" 
+  #\
   # TODO remove this line when that commit is in $SFINCS_VERSION branch
-  && git cherry-pick 2651b47b797c9acd05ccd8e6d737db19b0670217
+  # && git cherry-pick 2651b47b797c9acd05ccd8e6d737db19b0670217
 WORKDIR /usr/src/sfincs/source
 RUN chmod -R 777 autogen.sh
 # -fallow-argument-mismatch needed for https://github.com/Unidata/netcdf-fortran/issues/212

@@ -24,8 +24,8 @@ extern "C" void get_current_time(double *tcurrent);
 extern "C" void get_var_type(const char *c_var_name, char *c_type);
 
 // These function are also exported but not in the BMI spec
-extern "C" void get_var(const char *c_var_name, void *x);  // not exported; should be get_value?
-extern "C" void set_var(const char *c_var_name, float *xptr);  // should be set get_value?
+extern "C" void get_value(const char *c_var_name, void *x);  // not exported; should be get_value?
+extern "C" void set_value(const char *c_var_name, float *xptr);  // should be set get_value?
 extern "C" void get_var_shape(const char *c_var_name, int *var_shape); // should be get_grid_shape
 // extern "C" void get_var_rank(char *c_var_name, int *rank); // should be get_grid_rank
 
@@ -153,7 +153,7 @@ double SfincsBmi::GetTimeStep() {
 
 // Variable getters
 void SfincsBmi::GetValue(std::string name, void *dest) {
-  get_var(name.c_str(), dest);
+  get_value(name.c_str(), dest);
 }
 void *SfincsBmi::GetValuePtr(std::string name) {
   // TODO: implement
@@ -167,7 +167,7 @@ void SfincsBmi::GetValueAtIndices(std::string name, void *dest, int *inds,
 
 // Variable setters
 void SfincsBmi::SetValue(std::string name, void *src) {
-  set_var(name.c_str(), (float *) src);
+  set_value(name.c_str(), (float *) src);
 }
 void SfincsBmi::SetValueAtIndices(std::string name, int *inds, int count,
                                   void *src) {
