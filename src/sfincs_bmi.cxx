@@ -53,7 +53,7 @@ namespace
 {
   std::string &rtrim(std::string &str)
   {
-    str.erase(s.find_last_not_of(' ') + 1);
+    str.erase(str.find_last_not_of(' ') + 1);
     return str;
   }
 }
@@ -70,8 +70,7 @@ void SfincsBmi::Initialize(std::string config_file)
 }
 void SfincsBmi::Update()
 {
-  int status = update();
-  if (status != 0)
+  if (update() != 0)
   {
     throw BmiError();
   }
@@ -82,8 +81,7 @@ void SfincsBmi::UpdateUntil(double time)
 }
 void SfincsBmi::Finalize()
 {
-  int status = finalize();
-  if (status != 0)
+  if (finalize() != 0)
   {
     throw BmiError();
   }
