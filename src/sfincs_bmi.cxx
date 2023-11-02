@@ -111,14 +111,27 @@ int SfincsBmi::GetOutputItemCount()
 std::vector<std::string> SfincsBmi::GetInputVarNames()
 {
   // TODO: get from fortran
-  return {
-      "zs", "zb", "qtsrc", "zst_bnd"};
+  return {"zs",
+          "zb",
+          "qsrc_1",
+          "qsrc_2",
+          "tsrc",
+          "zst_bnd"};
 }
 std::vector<std::string> SfincsBmi::GetOutputVarNames()
 {
   // TODO: get from fortran
   return {
-      "z_xz", "z_yz", "zs", "zb", "qtsrc", "zst_bnd"};
+      "z_xz",
+      "z_yz",
+      "zs",
+      "zb",
+      "qsrc_1",
+      "qsrc_2",
+      "xsrc",
+      "ysrc",
+      "tsrc",
+      "zst_bnd"};
 }
 
 // Variable information functions
