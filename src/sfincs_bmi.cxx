@@ -11,11 +11,14 @@
 
 #include <cstring>
 #include <iostream>
+
 #include "sfincs_bmi.hxx"
 
 // sfincs_bmi.f90 implements/exports the following bmi functions:
 extern "C" int initialize(const char *c_config_file);
 extern "C" int finalize();
+
+extern "C" int get_component_name(char *name);
 
 extern "C" int update();
 extern "C" int update_until(double t);
@@ -45,6 +48,15 @@ extern "C" int get_grid_rank(int *rank);
 extern "C" int get_grid_size(int *size);
 extern "C" int get_grid_x(double *x);
 extern "C" int get_grid_y(double *y);
+
+namespace
+{
+  std::string &rtrim(std::string &str)
+  {
+    str.erase(s.find_last_not_of(' ') + 1);
+    return str;
+  }
+}
 
 // Model control functions.
 void SfincsBmi::Initialize(std::string config_file)
@@ -80,7 +92,13 @@ void SfincsBmi::Finalize()
 // Model information functions.
 std::string SfincsBmi::GetComponentName()
 {
-  return "Sfincs hydrodynamic model (C)";
+  char component_name[256];
+  if (get_component_name(component_name) != 0)
+  {
+    throw BmiError();
+  }
+  std::string str(component_name);
+  return rtrim(str);
 }
 int SfincsBmi::GetInputItemCount()
 {
