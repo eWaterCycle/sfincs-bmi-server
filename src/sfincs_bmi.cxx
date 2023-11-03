@@ -136,7 +136,29 @@ std::vector<std::string> SfincsBmi::GetOutputVarNames()
 int SfincsBmi::GetVarGrid(std::string name)
 {
   // TODO get from fortran
-  return 0;
+  if (name == "zs"){
+    return 0;
+  } else if (name=="z_xz"){
+    return 0;
+  } else if (name=="z_yz"){
+    return 0;
+  } else if (name=="zb"){
+    return 0;
+  } else if (name=="zst_bnd"){
+    return 0;
+  } else if (name=="qsrc_1"){
+    return 1;
+  } else if (name=="qsrc_2"){
+    return 1;
+  } else if (name=="xsrc"){
+    return 1;
+  } else if (name=="ysrc"){
+    return 1;
+  } else if (name=="tsrc"){
+    return 2;
+  } else {
+    throw BmiError();
+  };
 }
 std::string SfincsBmi::GetVarType(std::string name)
 {
@@ -260,6 +282,7 @@ void SfincsBmi::SetValueAtIndices(std::string name, int *inds, int count, void *
 
 // Grid information functions
 int SfincsBmi::GetGridRank(const int grid)
+// TODO grid id is not passed on to fortran
 {
   int rank;
   get_grid_rank(&rank);
@@ -286,8 +309,20 @@ std::string SfincsBmi::GetGridType(const int grid)
 
 void SfincsBmi::GetGridShape(const int grid, int *shape)
 {
-  // TODO get shape based on grid id instead of hardcoded variable name
-  get_var_shape("zs", shape);
+  // TODO get shape based on grid id instead of variable name
+  int success = 0;
+  if (grid == 0){
+    success = get_var_shape("zs", shape);
+  } else if (grid == 1){
+    success = get_var_shape("qsrc_1", shape);
+  } else if (grid == 2){
+    success = get_var_shape("tsrc", shape);
+  } else {
+    throw BmiError();
+  };
+  if (success != 0){
+    throw BmiError();
+  }
 }
 void SfincsBmi::GetGridSpacing(const int grid, double *spacing)
 {
