@@ -32,11 +32,11 @@ extern "C" int get_current_time(double *tcurrent);
 extern "C" int get_var_type(const char *c_var_name, char *c_type);
 
 // These function are also exported but not in the BMI spec
-extern "C" int get_value(const char *c_var_name, void *x); // not exported; should be get_value?
+extern "C" int get_value(const char *c_var_name, void *dest);
 extern "C" int get_value_at_indices(const char *name, void *dest, int *inds, int count);
-extern "C" int get_value_ptr(const char *name, void **dest_ptr);
+extern "C" int get_value_ptr(const char *name, void *dest_ptr);
 
-extern "C" int set_value(const char *c_var_name, float *xptr); // should be set get_value?
+extern "C" int set_value(const char *c_var_name, float *xptr);
 extern "C" int set_value_at_indices(const char *name, int *inds, int count, void *src);
 
 extern "C" int get_var_shape(const char *c_var_name, int *var_shape); // should be get_grid_shape
@@ -246,7 +246,8 @@ double SfincsBmi::GetTimeStep()
 // Variable getters
 void SfincsBmi::GetValue(std::string name, void *dest)
 {
-  if (get_value(name.c_str(), dest) != 0)
+//   if (get_value(name.c_str(), dest) != 0)
+  if (get_value_ptr(name.c_str(), dest) != 0)
   {
     throw BmiError();
   }
