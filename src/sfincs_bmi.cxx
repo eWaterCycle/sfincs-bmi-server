@@ -291,12 +291,10 @@ int SfincsBmi::GetGridRank(const int grid)
 }
 int SfincsBmi::GetGridSize(const int grid)
 {
-  int size;
-  if (get_grid_size(&size) != 0)
-  {
-    throw BmiError();
-  }
-  return size;
+  int shape[1];
+  int* size = shape;
+  this->GetGridShape(grid, size);
+  return *size;
 }
 std::string SfincsBmi::GetGridType(const int grid)
 {
