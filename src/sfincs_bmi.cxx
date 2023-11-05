@@ -286,7 +286,7 @@ int SfincsBmi::GetGridRank(const int grid)
 {
   int rank;
   get_grid_rank(&rank);
-  return rank;
+  return 1;
 }
 int SfincsBmi::GetGridSize(const int grid)
 {
