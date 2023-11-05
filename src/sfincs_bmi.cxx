@@ -32,7 +32,7 @@ extern "C" int get_current_time(double *tcurrent);
 extern "C" int get_var_type(const char *c_var_name, char *c_type);
 
 // These function are also exported but not in the BMI spec
-extern "C" int get_value(const char *c_var_name, void *dest);
+extern "C" int get_value(const char *c_var_name, void *dest, int *n);
 extern "C" int get_value_at_indices(const char *name, void *dest, int *inds, int count);
 extern "C" int get_value_ptr(const char *name, void *dest_ptr);
 
@@ -167,7 +167,8 @@ std::string SfincsBmi::GetVarType(std::string name)
   {
     throw BmiError();
   }
-  return std::string(c_type);
+  return "float32";
+  // return std::string(c_type);
 }
 std::string SfincsBmi::GetVarUnits(std::string name)
 {
@@ -246,8 +247,10 @@ double SfincsBmi::GetTimeStep()
 // Variable getters
 void SfincsBmi::GetValue(std::string name, void *dest)
 {
-//   if (get_value(name.c_str(), dest) != 0)
-  if (get_value_ptr(name.c_str(), dest) != 0)
+  int grid_id = this->GetVarGrid(name);
+  int n = this->GetGridSize(grid_id);
+  if (get_value(name.c_str(), dest, &n) != 0)
+  // if (get_value_ptr(name.c_str(), dest) != 0)
   {
     throw BmiError();
   }
