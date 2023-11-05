@@ -55,6 +55,7 @@ To rebuild the server without rebuilding Docker image use
 ```sh
 cd src
 mkdir build
+cd build
 cmake ..
 make
 # Start gprc server

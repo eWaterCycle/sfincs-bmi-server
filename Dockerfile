@@ -18,7 +18,7 @@ RUN apt clean && apt autoclean && apt update --fix-missing && apt upgrade -y && 
 WORKDIR /usr/src/sfincs
 ARG SFINCS_VERSION=feature/48-extend-bmi-functionality
 RUN git clone -b ${SFINCS_VERSION} https://github.com/Deltares/SFINCS . \
-  && git config --global user.email "you@example.com" && git config --global user.name "Your Name" 
+  && git config --global user.email "you@example.com" && git config --global user.name "Your Name"
   #\
   # TODO remove this line when that commit is in $SFINCS_VERSION branch
   # && git cherry-pick 2651b47b797c9acd05ccd8e6d737db19b0670217
@@ -32,10 +32,10 @@ RUN autoreconf -ivf && ./autogen.sh && ./configure --disable-openacc && make && 
 # End of copy of Dockerfile at https://github.com/Deltares/SFINCS/blob/feature/48-extend-bmi-functionality/source/Dockerfile
 
 # Inherit from the same base as sfincs to get compatible library versions
-FROM ubuntu:jammy AS sfincs_bmi_container
+# FROM ubuntu:jammy AS sfincs_bmi_container
 
-# Install sfincs
-COPY --from=sfincs_container /usr/local /usr/local
+# # Install sfincs
+# COPY --from=sfincs_container /usr/local /usr/local
 
 # Install build deps (including sfincs` dependency on netcdf)
 RUN apt-get update && apt-get install -qy git build-essential cmake autoconf libtool pkg-config libssl-dev libnetcdf-dev gfortran
