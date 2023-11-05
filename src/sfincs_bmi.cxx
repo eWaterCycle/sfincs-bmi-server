@@ -290,13 +290,26 @@ int SfincsBmi::GetGridRank(const int grid)
 {
   int rank;
   get_grid_rank(&rank);
-  return 1;
+  return rank;
 }
 int SfincsBmi::GetGridSize(const int grid)
 {
+  // TODO get size based on grid id instead of variable name
+  int success = 0;
   int shape[1];
   int* size = shape;
-  this->GetGridShape(grid, size);
+  if (grid == 0){
+    success = get_var_shape("zs", shape);
+  } else if (grid == 1){
+    success = get_var_shape("qsrc_1", shape);
+  } else if (grid == 2){
+    success = get_var_shape("tsrc", shape);
+  } else {
+    throw BmiError();
+  };
+  if (success != 0){
+    throw BmiError();
+  }
   return *size;
 }
 std::string SfincsBmi::GetGridType(const int grid)
@@ -311,20 +324,8 @@ std::string SfincsBmi::GetGridType(const int grid)
 
 void SfincsBmi::GetGridShape(const int grid, int *shape)
 {
-  // TODO get shape based on grid id instead of variable name
-  int success = 0;
-  if (grid == 0){
-    success = get_var_shape("zs", shape);
-  } else if (grid == 1){
-    success = get_var_shape("qsrc_1", shape);
-  } else if (grid == 2){
-    success = get_var_shape("tsrc", shape);
-  } else {
-    throw BmiError();
-  };
-  if (success != 0){
-    throw BmiError();
-  }
+  // Not in BMI spec for unstructured grids
+  throw NotImplemented();
 }
 void SfincsBmi::GetGridSpacing(const int grid, double *spacing)
 {
