@@ -11,239 +11,387 @@
 
 #include <cstring>
 #include <iostream>
+
 #include "sfincs_bmi.hxx"
 
 // sfincs_bmi.f90 implements/exports the following bmi functions:
-extern "C" int initialize(char *c_config_file);
-extern "C" int update(double dt);  // Doesn't seem to update current time
+extern "C" int initialize(const char *c_config_file);
 extern "C" int finalize();
-extern "C" void get_start_time(double *tstart);
-extern "C" void get_end_time(double *tend);
-extern "C" void get_time_step(double *dt);
-extern "C" void get_current_time(double *tcurrent);
-extern "C" void get_var_type(const char *c_var_name, char *c_type);
+
+extern "C" int get_component_name(char *name);
+
+extern "C" int update();
+extern "C" int update_until(double t);
+
+extern "C" int get_start_time(double *tstart);
+extern "C" int get_end_time(double *tend);
+extern "C" int get_time_step(double *dt);
+extern "C" int get_time_units(char *units);
+extern "C" int get_current_time(double *tcurrent);
+
+extern "C" int get_var_type(const char *c_var_name, char *c_type);
 
 // These function are also exported but not in the BMI spec
-extern "C" void get_var(const char *c_var_name, void *x);  // not exported; should be get_value?
-extern "C" void set_var(const char *c_var_name, float *xptr);  // should be set get_value?
-extern "C" void get_var_shape(const char *c_var_name, int *var_shape); // should be get_grid_shape
-// extern "C" void get_var_rank(char *c_var_name, int *rank); // should be get_grid_rank
+extern "C" int get_value(const char *c_var_name, void *dest, int *n);
+extern "C" int get_value_at_indices(const char *name, void *dest, int *inds, int count);
+extern "C" int get_value_ptr(const char *name, void *dest_ptr);
+
+extern "C" int set_value(const char *c_var_name, float *xptr);
+extern "C" int set_value_at_indices(const char *name, int *inds, int count, void *src);
+
+extern "C" int get_var_shape(const char *c_var_name, int *var_shape); // should be get_grid_shape
+// extern "C" int get_var_rank(char *c_var_name, int *rank); // should be get_grid_rank
 
 // The get_grid_* functions should accept grid id as first argument
-extern "C" void get_grid_type(char *c_type);
-extern "C" void get_grid_rank(int *rank);
-extern "C" void get_grid_size(int *size);
-extern "C" void get_grid_x(double *x);
-extern "C" void get_grid_y(double *y);
+extern "C" int get_grid_type(char *c_type);
+extern "C" int get_grid_rank(int *rank);
+extern "C" int get_grid_size(int *size);
+extern "C" int get_grid_x(double *x);
+extern "C" int get_grid_y(double *y);
 
+namespace
+{
+  std::string &rtrim(std::string &str)
+  {
+    str.erase(str.find_last_not_of(' ') + 1);
+    return str;
+  }
+}
 
 // Model control functions.
-void SfincsBmi::Initialize(std::string config_file) {
+void SfincsBmi::Initialize(std::string config_file)
+{
   // Convert c-string to character array
   const int length = config_file.length();
-  char* c_config_file = new char[length + 1];
+  char *c_config_file = new char[length + 1];
   strcpy(c_config_file, config_file.c_str());
   initialize(c_config_file);
   delete[] c_config_file;
 }
-void SfincsBmi::Update() {
-  double dt = this->GetTimeStep();
-  // dt = 1.;  // The initial time step is super small (1e-6)
-  int status = update(dt);
-  if (status != 0) {
+void SfincsBmi::Update()
+{
+  if (update() != 0)
+  {
     throw BmiError();
   }
 }
-void SfincsBmi::UpdateUntil(double time) {
-  double t = this->GetCurrentTime();
-  while (t < time) {
-    this->Update();
-    t = this->GetCurrentTime();
-  };
+void SfincsBmi::UpdateUntil(double time)
+{
+  update_until(time);
 }
-void SfincsBmi::Finalize() {
-  int status = finalize();
-  if (status != 0) {
+void SfincsBmi::Finalize()
+{
+  if (finalize() != 0)
+  {
     throw BmiError();
   }
 }
 
 // Model information functions.
-std::string SfincsBmi::GetComponentName() {
-  return "Sfincs hydrodynamic model (C)";
+std::string SfincsBmi::GetComponentName()
+{
+  char component_name[256];
+  if (get_component_name(component_name) != 0)
+  {
+    throw BmiError();
+  }
+  std::string str(component_name);
+  return rtrim(str);
 }
-int SfincsBmi::GetInputItemCount() {
+int SfincsBmi::GetInputItemCount()
+{
   return this->GetInputVarNames().size();
 }
-int SfincsBmi::GetOutputItemCount() {
+int SfincsBmi::GetOutputItemCount()
+{
   return this->GetOutputVarNames().size();
 }
-std::vector<std::string> SfincsBmi::GetInputVarNames() {
-  // TODO: get from fortran 
-  return {
-    "zs", "zb", "qtsrc", "zst_bnd"
-  };  
+std::vector<std::string> SfincsBmi::GetInputVarNames()
+{
+  // TODO: get from fortran
+  return {"zs",
+          "zb",
+          "qsrc_1",
+          "qsrc_2",
+          "tsrc",
+          "zst_bnd"};
 }
-std::vector<std::string> SfincsBmi::GetOutputVarNames() {
-  // TODO: get from fortran 
+std::vector<std::string> SfincsBmi::GetOutputVarNames()
+{
+  // TODO: get from fortran
   return {
-    "z_xz", "z_yz", "zs", "zb", "qtsrc", "zst_bnd"
-  };
+      "z_xz",
+      "z_yz",
+      "zs",
+      "zb",
+      "qsrc_1",
+      "qsrc_2",
+      "xsrc",
+      "ysrc",
+      "tsrc",
+      "zst_bnd"};
 }
 
 // Variable information functions
-int SfincsBmi::GetVarGrid(std::string name) {
+int SfincsBmi::GetVarGrid(std::string name)
+{
   // TODO get from fortran
-  return 0;
+  if (name == "zs"){
+    return 0;
+  } else if (name=="z_xz"){
+    return 0;
+  } else if (name=="z_yz"){
+    return 0;
+  } else if (name=="zb"){
+    return 0;
+  } else if (name=="zst_bnd"){
+    return 0;
+  } else if (name=="qsrc_1"){
+    return 1;
+  } else if (name=="qsrc_2"){
+    return 1;
+  } else if (name=="xsrc"){
+    return 1;
+  } else if (name=="ysrc"){
+    return 1;
+  } else if (name=="tsrc"){
+    return 2;
+  } else {
+    throw BmiError();
+  };
 }
-std::string SfincsBmi::GetVarType(std::string name) {
+std::string SfincsBmi::GetVarType(std::string name)
+{
   char c_type[6]; // Always returns float
-  get_var_type(name.c_str(), c_type);
-  std::string type_name(c_type);
-  return type_name;
+  if (get_var_type(name.c_str(), c_type) != 0)
+  {
+    throw BmiError();
+  }
+  return "float32";
+  // return std::string(c_type);
 }
-std::string SfincsBmi::GetVarUnits(std::string name) {
+std::string SfincsBmi::GetVarUnits(std::string name)
+{
   // TODO get from fortran
   // Units from https://sfincs.readthedocs.io/en/latest/output.html#output-description
-  if (name == "zs" || name == "zb") {
+  if (name == "zs" || name == "zb")
+  {
     return "m above reference level";
   }
   // TODO others
   return "";
 }
-int SfincsBmi::GetVarItemsize(std::string name) {
+int SfincsBmi::GetVarItemsize(std::string name)
+{
   // TODO get from fortran
   return sizeof(float);
 }
-int SfincsBmi::GetVarNbytes(std::string name) {
+int SfincsBmi::GetVarNbytes(std::string name)
+{
   int itemsize = this->GetVarItemsize(name);
   int gridsize = this->GetGridSize(this->GetVarGrid(name));
   return itemsize * gridsize;
 }
-std::string SfincsBmi::GetVarLocation(std::string name) {
+std::string SfincsBmi::GetVarLocation(std::string name)
+{
   // TODO get from fortran
   return "node";
 }
 
-double SfincsBmi::GetCurrentTime() {
+double SfincsBmi::GetCurrentTime()
+{
   double t;
-  get_current_time(&t);
+  if (get_current_time(&t) != 0)
+  {
+    throw BmiError();
+  }
   return t;
 }
-double SfincsBmi::GetStartTime() {
+double SfincsBmi::GetStartTime()
+{
   double starttime;
-  get_start_time(&starttime);
+  if (get_start_time(&starttime) != 0)
+  {
+    throw BmiError();
+  }
   return starttime;
 }
-double SfincsBmi::GetEndTime() {
+double SfincsBmi::GetEndTime()
+{
   double endtime;
-  get_end_time(&endtime);
+  if (get_end_time(&endtime) != 0)
+  {
+    throw BmiError();
+  }
   return endtime;
 }
-std::string SfincsBmi::GetTimeUnits() {
-  // same as unit for dthisout parameter 
-  // at https://sfincs.readthedocs.io/en/latest/parameters.html
-  return "s";
+std::string SfincsBmi::GetTimeUnits()
+{
+  char time_unit[2]; // Always returns "s"
+  if (get_time_units(time_unit) != 0)
+  {
+    throw BmiError();
+  }
+  return std::string(time_unit);
 }
-double SfincsBmi::GetTimeStep() {
+double SfincsBmi::GetTimeStep()
+{
   double dt;
-  get_time_step(&dt);
+  if (get_time_step(&dt) != 0)
+  {
+    throw BmiError();
+  }
   return dt;
 }
 
 // Variable getters
-void SfincsBmi::GetValue(std::string name, void *dest) {
-  get_var(name.c_str(), dest);
+void SfincsBmi::GetValue(std::string name, void *dest)
+{
+  int grid_id = this->GetVarGrid(name);
+  int n = this->GetGridSize(grid_id);
+  if (get_value(name.c_str(), dest, &n) != 0)
+  // if (get_value_ptr(name.c_str(), dest) != 0)
+  {
+    throw BmiError();
+  }
 }
-void *SfincsBmi::GetValuePtr(std::string name) {
+void *SfincsBmi::GetValuePtr(std::string name)
+{
   // TODO: implement
   throw NotImplemented();
 }
-void SfincsBmi::GetValueAtIndices(std::string name, void *dest, int *inds,
-                                  int count) {
-  // TODO: implement
-  throw NotImplemented();
+void SfincsBmi::GetValueAtIndices(std::string name, void *dest, int *inds, int count)
+{
+  if (get_value_at_indices(name.c_str(), dest, inds, count) != 0)
+  {
+    throw BmiError();
+  }
 }
 
 // Variable setters
-void SfincsBmi::SetValue(std::string name, void *src) {
-  set_var(name.c_str(), (float *) src);
+void SfincsBmi::SetValue(std::string name, void *src)
+{
+  if (set_value(name.c_str(), (float *)src) != 0)
+  {
+    throw BmiError();
+  }
 }
-void SfincsBmi::SetValueAtIndices(std::string name, int *inds, int count,
-                                  void *src) {
-  // TODO: implement
-  throw NotImplemented();
+void SfincsBmi::SetValueAtIndices(std::string name, int *inds, int count, void *src)
+{
+  if (set_value_at_indices(name.c_str(), inds, count, (float *)src) != 0)
+  {
+    throw BmiError();
+  }
 }
 
 // Grid information functions
-int SfincsBmi::GetGridRank(const int grid) {
+int SfincsBmi::GetGridRank(const int grid)
+// TODO grid id is not passed on to fortran
+{
   int rank;
   get_grid_rank(&rank);
   return rank;
 }
-int SfincsBmi::GetGridSize(const int grid) {
-  int size;
-  get_grid_size(&size);
-  return size;
+int SfincsBmi::GetGridSize(const int grid)
+{
+  // TODO get size based on grid id instead of variable name
+  int success = 0;
+  int shape[1];
+  int* size = shape;
+  if (grid == 0){
+    success = get_var_shape("zs", shape);
+  } else if (grid == 1){
+    success = get_var_shape("qsrc_1", shape);
+  } else if (grid == 2){
+    success = get_var_shape("tsrc", shape);
+  } else {
+    throw BmiError();
+  };
+  if (success != 0){
+    throw BmiError();
+  }
+  return *size;
 }
-std::string SfincsBmi::GetGridType(const int grid) {
+std::string SfincsBmi::GetGridType(const int grid)
+{
   char c_type[13]; // Always returns unstructered or rectilinear
-  get_grid_type(c_type);
-  std::string type_name(c_type);
-  return type_name;
+  if (get_grid_type(c_type) != 0)
+  {
+    throw BmiError();
+  }
+  return std::string(c_type);
 }
 
-void SfincsBmi::GetGridShape(const int grid, int *shape) {
-  // TODO get shape based on grid id instead of hardcoded variable name
-  get_var_shape("zs", shape);
+void SfincsBmi::GetGridShape(const int grid, int *shape)
+{
+  // Not in BMI spec for unstructured grids
+  throw NotImplemented();
 }
-void SfincsBmi::GetGridSpacing(const int grid, double *spacing) {
+void SfincsBmi::GetGridSpacing(const int grid, double *spacing)
+{
   // TODO: implement
   throw NotImplemented();
 }
-void SfincsBmi::GetGridOrigin(const int grid, double *origin) {
+void SfincsBmi::GetGridOrigin(const int grid, double *origin)
+{
   // TODO: implement
   throw NotImplemented();
 }
 
-void SfincsBmi::GetGridX(const int grid, double *x) {
+void SfincsBmi::GetGridX(const int grid, double *x)
+{
   std::cout << "GetGridX was called" << std::endl;
-  get_grid_x(x);
+  if (get_grid_x(x) != 0)
+  {
+    throw BmiError();
+  }
 }
-void SfincsBmi::GetGridY(const int grid, double *y) {
-  get_grid_y(y);
+void SfincsBmi::GetGridY(const int grid, double *y)
+{
+  if (get_grid_y(y) != 0)
+  {
+    throw BmiError();
+  }
 }
-void SfincsBmi::GetGridZ(const int grid, double *z) {
+void SfincsBmi::GetGridZ(const int grid, double *z)
+{
   // TODO: implement
   throw NotImplemented();
 }
 
-int SfincsBmi::GetGridNodeCount(const int grid) {
+int SfincsBmi::GetGridNodeCount(const int grid)
+{
   // TODO: implement
   throw NotImplemented();
 }
-int SfincsBmi::GetGridEdgeCount(const int grid) {
+int SfincsBmi::GetGridEdgeCount(const int grid)
+{
   // TODO: implement
   throw NotImplemented();
 }
-int SfincsBmi::GetGridFaceCount(const int grid) {
+int SfincsBmi::GetGridFaceCount(const int grid)
+{
   // TODO: implement
   throw NotImplemented();
 }
 
-void SfincsBmi::GetGridEdgeNodes(const int grid, int *edge_nodes) {
+void SfincsBmi::GetGridEdgeNodes(const int grid, int *edge_nodes)
+{
   // TODO: implement
   throw NotImplemented();
 }
-void SfincsBmi::GetGridFaceEdges(const int grid, int *face_edges) {
+void SfincsBmi::GetGridFaceEdges(const int grid, int *face_edges)
+{
   // TODO: implement
   throw NotImplemented();
 }
-void SfincsBmi::GetGridFaceNodes(const int grid, int *face_nodes) {
+void SfincsBmi::GetGridFaceNodes(const int grid, int *face_nodes)
+{
   // TODO: implement
   throw NotImplemented();
 }
-void SfincsBmi::GetGridNodesPerFace(const int grid, int *nodes_per_face) {
+void SfincsBmi::GetGridNodesPerFace(const int grid, int *nodes_per_face)
+{
   // TODO: implement
   throw NotImplemented();
 }
